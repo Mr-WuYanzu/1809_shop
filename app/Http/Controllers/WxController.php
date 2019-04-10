@@ -20,6 +20,7 @@ class WxController extends Controller
 //        dd($obj);
         $u=$this->WxUserTail($obj->FromUserName);
 //        dd($u);
+        $openid=$u['openid'];
         $info=[
             'openid'=>$u['openid'],
             'nickname'=>$u['nickname'],
@@ -31,8 +32,18 @@ class WxController extends Controller
             'subscribe_time'=>$u['subscribe_time'],
             'subscribe_scene'=>$u['subscribe_scene']
         ];
+        $res=WxUser::where('openid',$openid)->get();
+        if($res){
+            $id=WxUser::insertGetId($info);
+            echo "<xml>
+                  <ToUserName><![CDATA[toUser]]>".$openid."</ToUserName>
+                  <FromUserName><![CDATA[fromUser]]>wxe5ff29e2590e9cef</FromUserName>
+                  <CreateTime>".time()."</CreateTime>
+                  <MsgType><![CDATA[text]]></MsgType>
+                  <Content><![CDATA[欢迎关注，".$u['nickname']."]]></Content>
+                </xml>";
+        }
 
-        $id=WxUser::insertGetId($info);
         dd($id);
 
         $time=date('Y-m-d H:i:s');
@@ -56,11 +67,6 @@ class WxController extends Controller
             Redis::expire($key,3600);
         }
         return $token;
-    }
-    //查询数据库数据
-    public function shop(){
-        $data=DB::table('shop_address')->get();
-        dd($data);
     }
     //查询用户资料
     public function WxUserTail($openid){
