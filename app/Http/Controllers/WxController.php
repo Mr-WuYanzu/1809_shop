@@ -19,7 +19,7 @@ class WxController extends Controller
         $str=$time.$data."\n";
         is_dir('logs') or mkdir('logs',0777,true);
         file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
-        
+
         $obj=simplexml_load_string($data);
         $u=$this->WxUserTail($obj->FromUserName);
         $openid=$u['openid'];
@@ -39,7 +39,7 @@ class WxController extends Controller
             $id=WxUser::insertGetId($info);
             echo "<xml>
                   <ToUserName><![CDATA[toUser]]>".$openid."</ToUserName>
-                  <FromUserName><![CDATA[fromUser]]>wxe5ff29e2590e9cef</FromUserName>
+                  <FromUserName><![CDATA[fromUser]]>".$obj->ToUserName."</FromUserName>
                   <CreateTime>".time()."</CreateTime>
                   <MsgType><![CDATA[text]]></MsgType>
                   <Content><![CDATA[欢迎回来，".$u['nickname']."]]></Content>
