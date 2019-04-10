@@ -15,11 +15,13 @@ class WxController extends Controller
 //    用户关注微信公众号
     public function wxEvent(){
         $data = file_get_contents("php://input");
-//        dd($data);
+        $time=date('Y-m-d H:i:s');
+        $str=$time.$data."\n";
+        is_dir('logs') or mkdir('logs',0777,true);
+        file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
+        
         $obj=simplexml_load_string($data);
-//        dd($obj);
         $u=$this->WxUserTail($obj->FromUserName);
-//        dd($u);
         $openid=$u['openid'];
         $info=[
             'openid'=>$u['openid'],
@@ -40,16 +42,18 @@ class WxController extends Controller
                   <FromUserName><![CDATA[fromUser]]>wxe5ff29e2590e9cef</FromUserName>
                   <CreateTime>".time()."</CreateTime>
                   <MsgType><![CDATA[text]]></MsgType>
-                  <Content><![CDATA[欢迎关注，".$u['nickname']."]]></Content>
+                  <Content><![CDATA[欢迎回来，".$u['nickname']."]]></Content>
+                </xml>";
+        }else{
+            $id=WxUser::insertGetId($info);
+            echo "<xml>
+                  <ToUserName><![CDATA[toUser]]>".$openid."</ToUserName>
+                  <FromUserName><![CDATA[fromUser]]>wxe5ff29e2590e9cef</FromUserName>
+                  <CreateTime>".time()."</CreateTime>
+                  <MsgType><![CDATA[text]]></MsgType>
+                  <Content><![CDATA[欢迎回来，".$u['nickname']."]]></Content>
                 </xml>";
         }
-
-        dd($id);
-
-        $time=date('Y-m-d H:i:s');
-        $str=$time.$data."\n";
-        is_dir('logs') or mkdir('logs',0777,true);
-        file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
         echo "SUCCESS";
     }
     //获取access_token
