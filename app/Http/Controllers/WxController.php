@@ -21,41 +21,33 @@ class WxController extends Controller
         file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
 
         $obj=simplexml_load_string($data);
-        $u=$this->WxUserTail($obj->FromUserName);
-        $openid=$u['openid'];
-        $info=[
-            'openid'=>$u['openid'],
-            'nickname'=>$u['nickname'],
-            'sex'=>$u['sex'],
-            'city'=>$u['city'],
-            'province'=>$u['province'],
-            'country'=>$u['country'],
-            'headimgurl'=>$u['headimgurl'],
-            'subscribe_time'=>$u['subscribe_time'],
-            'subscribe_scene'=>$u['subscribe_scene']
-        ];
-        $res=WxUser::where('openid',$openid)->get();
-        if($res){
-            $id=WxUser::insertGetId($info);
-            echo "<xml>
-                  <ToUserName><![CDATA[toUser]]>".$openid."</ToUserName>
-                  <FromUserName><![CDATA[fromUser]]>".$obj->ToUserName."</FromUserName>
-                  <CreateTime>".time()."</CreateTime>
-                  <MsgType><![CDATA[text]]></MsgType>
-                  <Content><![CDATA[欢迎回来，".$u['nickname']."]]></Content>
-                </xml>";
-        }else{
-            $id=WxUser::insertGetId($info);
-            echo "<xml>
-                  <ToUserName><![CDATA[toUser]]>".$openid."</ToUserName>
-                  <FromUserName><![CDATA[fromUser]]>wxe5ff29e2590e9cef</FromUserName>
-                  <CreateTime>".time()."</CreateTime>
-                  <MsgType><![CDATA[text]]></MsgType>
-                  <Content><![CDATA[欢迎回来，".$u['nickname']."]]></Content>
-                </xml>";
+        $wx_id=$obj->ToUserName;
+        $event=$obj->Event;
+        $openid=$obj->FromUserName;
+        if($event=='subscribe'){
+            $res=WxUser::where(['openid'=>$openid])->first();
+            if($res){
+                echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎回来 '. $res['nickname'] .']]></Content></xml>';
+            }else{
+                $u=$this->WxUserTail($obj->FromUserName);
+                $info=[
+                    'openid'=>$u['openid'],
+                    'nickname'=>$u['nickname'],
+                    'sex'=>$u['sex'],
+                    'city'=>$u['city'],
+                    'province'=>$u['province'],
+                    'country'=>$u['country'],
+                    'headimgurl'=>$u['headimgurl'],
+                    'subscribe_time'=>$u['subscribe_time'],
+                    'subscribe_scene'=>$u['subscribe_scene']
+                ];
+                $id=WxUser::insertGetId($info);
+                echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎关注 '. $u['nickname'] .']]></Content></xml>';
+            }
         }
-        echo "SUCCESS";
+//        return $this->zi();
     }
+
     //获取access_token
     public function access_token(){
 
@@ -77,6 +69,66 @@ class WxController extends Controller
         $data=file_get_contents("https://api.weixin.qq.com/cgi-bin/user/info?access_token=".$this->access_token()."&openid=".$openid."&lang=zh_CN");
         $arr=json_decode($data,true);
         return $arr;
+    }
+    public function Zi(){
+        $objtaken = new \Url();
+        $url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=".$this->access_token();
+        $arr=array(
+            "button"=>array(
+                array(
+                    'name'=>"玩具",
+                    'sub_button'=>array(
+                        array(
+                            'name'=>"拍照",
+                            "type"=>"pic_sysphoto",
+                            "key"=>"tf",
+                        ),
+                        array(
+                            'name'=>"关联",
+                            "type"=>"view",
+                            "key"=>"cgf",
+                            "url"=>"http://mp.weixin.qq.com"
+                        )
+                    ),
+                ),
+                array(
+                    "name"=>"菜单",
+                    "sub_button"=>array(
+                        array(
+                            'name'=>"男娃娃",
+                            "type"=>"click",
+                            "key"=>"xxx",
+                        ),
+                        array(
+                            'name'=>"女娃娃",
+                            "type"=>"click",
+                            "key"=>"xxx",
+                        ),
+                        array(
+                            'name'=>"小洋人",
+                            "type"=>"click",
+                            "key"=>"xxx",
+                        ),
+                    ),
+                ),
+
+                array(
+                    "name"=>"推广",
+                    "sub_button"=>array(
+                        array(
+                            'name'=>"地址",
+                            "type"=>"scancode_push",
+                            "key"=>"ss",
+                        ),
+                    ),
+                )
+            ),
+        );
+        $arrinfo = json_encode($arr,JSON_UNESCAPED_UNICODE);
+// var_dump($arrinfo);
+
+        $bol = $objtaken->sendPost($url,$arrinfo);
+        var_dump($bol);
     }
 
 }
