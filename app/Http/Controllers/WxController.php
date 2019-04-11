@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use DB;
 use App\model\Wx\WxUser;
+use GuzzleHttp\Client;
 class WxController extends Controller
 {
     //第一次调用接口
@@ -70,65 +71,35 @@ class WxController extends Controller
         $arr=json_decode($data,true);
         return $arr;
     }
-    public function Zi(){
-        $objtaken = new \Url();
-        $url = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=".$this->access_token();
-        $arr=array(
-            "button"=>array(
-                array(
-                    'name'=>"玩具",
-                    'sub_button'=>array(
-                        array(
-                            'name'=>"拍照",
-                            "type"=>"pic_sysphoto",
-                            "key"=>"tf",
-                        ),
-                        array(
-                            'name'=>"关联",
-                            "type"=>"view",
-                            "key"=>"cgf",
-                            "url"=>"http://mp.weixin.qq.com"
-                        )
-                    ),
-                ),
-                array(
-                    "name"=>"菜单",
-                    "sub_button"=>array(
-                        array(
-                            'name'=>"男娃娃",
-                            "type"=>"click",
-                            "key"=>"xxx",
-                        ),
-                        array(
-                            'name'=>"女娃娃",
-                            "type"=>"click",
-                            "key"=>"xxx",
-                        ),
-                        array(
-                            'name'=>"小洋人",
-                            "type"=>"click",
-                            "key"=>"xxx",
-                        ),
-                    ),
-                ),
-
-                array(
-                    "name"=>"推广",
-                    "sub_button"=>array(
-                        array(
-                            'name'=>"地址",
-                            "type"=>"scancode_push",
-                            "key"=>"ss",
-                        ),
-                    ),
-                )
-            ),
-        );
-        $arrinfo = json_encode($arr,JSON_UNESCAPED_UNICODE);
-// var_dump($arrinfo);
-
-        $bol = $objtaken->sendPost($url,$arrinfo);
-        var_dump($bol);
+   //创建微信二级菜单
+    public function create_menu(){
+        $url="https://api.weixin.qq.com/cgi-bin/menu/create?access_token=".$this->access_token();
+        $arr=[
+            'button'=>[
+                [
+                    'type'=>'click',
+                    'name'=>'贪玩蓝月',
+                    'key'=> 'V1001_TODAY_TWLY',
+                ],
+                [
+                    'type'=>'click',
+                    'name'=>'决战沙城',
+                    'key'=> 'V1001_TODAY_JZSC',
+                ]
+            ]
+        ];
+        $str=json_encode($arr,JSON_UNESCAPED_UNICODE);
+        $client=new Client();
+        $respons=$client->request('POST',$url,[
+            'body'=>$str
+        ]);
+        $ass=$respons->getBody();
+        $ar=json_decode($ass,true);
+        if($ar['errcode']>0){
+            echo "创建菜单失败";
+        }else{
+            echo "创建菜单成功";
+        }
     }
 
 }

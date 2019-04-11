@@ -24,3 +24,5 @@ Route::post('/weixin/valid','WxController@wxEvent');
 Route::any('/access/token','WxController@access_token');
 //查询数据库数据
 Route::any('/shop',"WxController@shop");
+//创建微信菜单
+Route::any('/create_menu','WxController@create_menu');
