@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use DB;
 use App\model\Wx\WxUser;
+use App\model\Wx\WxText;
 use GuzzleHttp\Client;
 class WxController extends Controller
 {
@@ -25,27 +26,41 @@ class WxController extends Controller
         $wx_id=$obj->ToUserName;
         $event=$obj->Event;
         $openid=$obj->FromUserName;
-        if($event=='subscribe'){
-            $res=WxUser::where(['openid'=>$openid])->first();
-            if($res){
-                echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎回来 '. $res['nickname'] .']]></Content></xml>';
-            }else{
-                $u=$this->WxUserTail($obj->FromUserName);
-                $info=[
-                    'openid'=>$u['openid'],
-                    'nickname'=>$u['nickname'],
-                    'sex'=>$u['sex'],
-                    'city'=>$u['city'],
-                    'province'=>$u['province'],
-                    'country'=>$u['country'],
-                    'headimgurl'=>$u['headimgurl'],
-                    'subscribe_time'=>$u['subscribe_time'],
-                    'subscribe_scene'=>$u['subscribe_scene']
+        $type=$obj->MsgType;
+        if($type=='txt'){
+            $font=$obj->Content;
+            $time=$obj->CreateTime;
+            $info=[
+                    'openid'=>$openid,
+                    'create_time'=>$time,
+                    'font'=>$font
                 ];
-                $id=WxUser::insertGetId($info);
-                echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎关注 '. $u['nickname'] .']]></Content></xml>';
+
+            $id=WxText::insertGetId($info);
+        }else{
+            if($event=='subscribe'){
+                $res=WxUser::where(['openid'=>$openid])->first();
+                if($res){
+                    echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎回来 '. $res['nickname'] .']]></Content></xml>';
+                }else{
+                    $u=$this->WxUserTail($obj->FromUserName);
+                    $info=[
+                        'openid'=>$u['openid'],
+                        'nickname'=>$u['nickname'],
+                        'sex'=>$u['sex'],
+                        'city'=>$u['city'],
+                        'province'=>$u['province'],
+                        'country'=>$u['country'],
+                        'headimgurl'=>$u['headimgurl'],
+                        'subscribe_time'=>$u['subscribe_time'],
+                        'subscribe_scene'=>$u['subscribe_scene']
+                    ];
+                    $id=WxUser::insertGetId($info);
+                    echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎关注 '. $u['nickname'] .']]></Content></xml>';
+                }
             }
         }
+        
 //        return $this->zi();
     }
 
