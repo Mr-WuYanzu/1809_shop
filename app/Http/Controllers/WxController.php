@@ -21,11 +21,8 @@ class WxController extends Controller
         $str=$time.$data."\n";
         is_dir('logs') or mkdir('logs',0777,true);
         file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
-
         $obj=simplexml_load_string($data);
-        dd($obj);
         $wx_id=$obj->ToUserName;
-        $event=$obj->Event;
         $openid=$obj->FromUserName;
         $type=$obj->MsgType;
         if($type=='text'){
@@ -39,6 +36,7 @@ class WxController extends Controller
 
             $id=WxText::insertGetId($info);
         }else{
+            $event=$obj->Event;
             if($event=='subscribe'){
                 $res=WxUser::where(['openid'=>$openid])->first();
                 if($res){
