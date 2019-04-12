@@ -27,7 +27,7 @@ class WxController extends Controller
         $event=$obj->Event;
         $openid=$obj->FromUserName;
         $type=$obj->MsgType;
-        if($type=='txt'){
+        if($type=='text'){
             $font=$obj->Content;
             $time=$obj->CreateTime;
             $info=[
