@@ -23,6 +23,7 @@ class WxController extends Controller
         file_put_contents("logs/wx_event.log",$str,FILE_APPEND);
 
         $obj=simplexml_load_string($data);
+        dd($obj);
         $wx_id=$obj->ToUserName;
         $event=$obj->Event;
         $openid=$obj->FromUserName;
