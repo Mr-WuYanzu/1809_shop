@@ -7,3 +7,4 @@
 .idea
 /storage/app/weixin
 /public/wx
+.gitignore

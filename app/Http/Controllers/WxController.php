@@ -28,7 +28,7 @@ class WxController extends Controller
         $wx_id=$obj->ToUserName;
         $openid=$obj->FromUserName;
         $type=$obj->MsgType;
-        if($type=='text'){
+        if($type=='text'){              //文字消息入库
             $font=$obj->Content;
             $time=$obj->CreateTime;
             $info=[
@@ -39,12 +39,10 @@ class WxController extends Controller
                 ];
 
             $id=WxText::insertGetId($info);
-        }elseif($type=='image'){
-            $font=$obj->Content;
+        }elseif($type=='image'){        //图片消息入库
             $time=$obj->CreateTime;
             $media_id=$obj->MediaId;
             $url="https://api.weixin.qq.com/cgi-bin/media/get?access_token=".$this->access_token()."&media_id=".$media_id;
-            // echo "PicUrl:".$obj->PicUrl;
             $img=$client->get(new Uri($url));
             //获取文件类型
             $headers=$img->getHeaders();
@@ -72,12 +70,7 @@ class WxController extends Controller
             }else{
                 echo "添加失败";
             }
-            // $imgname=time().rand(11111,99999).'.jpg';
-            // file_put_contents('wx/img/'.$imgname,$img);
-
-
-        }elseif($type=='voice'){
-            $font=$obj->Content;
+        }elseif($type=='voice'){        //语音消息入库
             $time=$obj->CreateTime;
             $media_id=$obj->MediaId;
             $url="https://api.weixin.qq.com/cgi-bin/media/get?access_token=".$this->access_token()."&media_id=".$media_id;
