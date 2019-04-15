@@ -21,7 +21,7 @@ Route::get('/phpinfo', function () {
 Route::get('/weixin/valid','WxController@valid');
 Route::post('/weixin/valid','WxController@wxEvent');
 //获取access_token
-Route::any('/access/token','WxController@access_token');
+Route::get('/access/token','WxController@access_token');
 //查询数据库数据
 Route::any('/shop',"WxController@shop");
 //创建微信菜单

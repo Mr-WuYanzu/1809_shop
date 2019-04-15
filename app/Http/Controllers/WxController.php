@@ -38,7 +38,7 @@ class WxController extends Controller
         }elseif($type=='image'){
             $img=file_get_contents($obj->PicUrl);
             $imgname=time().rand(11111,99999).'.jpg';
-            file_put_contents('wx/img/',$img);
+            file_put_contents('wx/img/'.$imgname,$img);
         }else{
             $event=$obj->Event;
             if($event=='subscribe'){
