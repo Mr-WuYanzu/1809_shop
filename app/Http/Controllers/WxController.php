@@ -35,6 +35,10 @@ class WxController extends Controller
                 ];
 
             $id=WxText::insertGetId($info);
+        }elseif($type=='image'){
+            $img=file_get_contents($obj->PicUrl);
+            $imgname=time().rand(11111,99999).'.jpg';
+            file_put_contents('wx/img/',$img);
         }else{
             $event=$obj->Event;
             if($event=='subscribe'){
