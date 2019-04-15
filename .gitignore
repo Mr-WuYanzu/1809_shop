@@ -5,3 +5,5 @@
 /storage/*.key
 /vendor
 .idea
+/storage/app/weixin
+/public/wx

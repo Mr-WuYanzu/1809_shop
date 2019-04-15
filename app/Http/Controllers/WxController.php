@@ -8,6 +8,8 @@ use DB;
 use App\model\Wx\WxUser;
 use App\model\Wx\WxText;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Uri;
+use Illuminate\Support\Facades\Storage;
 class WxController extends Controller
 {
     //第一次调用接口
@@ -16,6 +18,7 @@ class WxController extends Controller
     }
 //    用户关注微信公众号
     public function wxEvent(){
+        $client=new Client();
         $data = file_get_contents("php://input");
         $time=date('Y-m-d H:i:s');
         $str=$time.$data."\n";
@@ -29,6 +32,7 @@ class WxController extends Controller
             $font=$obj->Content;
             $time=$obj->CreateTime;
             $info=[
+                    'type'=>'text',
                     'openid'=>$openid,
                     'create_time'=>$time,
                     'font'=>$font
@@ -36,9 +40,74 @@ class WxController extends Controller
 
             $id=WxText::insertGetId($info);
         }elseif($type=='image'){
-            $img=file_get_contents($obj->PicUrl);
-            $imgname=time().rand(11111,99999).'.jpg';
-            file_put_contents('wx/img/'.$imgname,$img);
+            $font=$obj->Content;
+            $time=$obj->CreateTime;
+            $media_id=$obj->MediaId;
+            $url="https://api.weixin.qq.com/cgi-bin/media/get?access_token=".$this->access_token()."&media_id=".$media_id;
+            // echo "PicUrl:".$obj->PicUrl;
+            $img=$client->get(new Uri($url));
+            //获取文件类型
+            $headers=$img->getHeaders();
+            $img_name=$headers['Content-disposition'][0];
+            $fileInfo=substr($img_name,'-15');
+            $img_name=substr(md5(time().mt_rand(1111,9999)),5,8).$fileInfo;
+            $img_name=rtrim($img_name,'"');
+            // 保存文件
+            $res=Storage::put('weixin/img/'.$img_name, $img->getBody());
+            if($res=='1'){
+                //文件路径入库
+                $data=[
+                    'type'=>'img',
+                    'openid'=>$openid,
+                    'create_time'=>$time,
+                    'font'=>$img_name
+                ];
+                $id=WxText::insertGetId($data);
+                if(!$data){
+                    Storage::delete('weixin/img/'.$img_name);
+                    echo "添加失败";
+                }else{
+                    echo "添加成功";
+                }
+            }else{
+                echo "添加失败";
+            }
+            // $imgname=time().rand(11111,99999).'.jpg';
+            // file_put_contents('wx/img/'.$imgname,$img);
+
+
+        }elseif($type=='voice'){
+            $font=$obj->Content;
+            $time=$obj->CreateTime;
+            $media_id=$obj->MediaId;
+            $url="https://api.weixin.qq.com/cgi-bin/media/get?access_token=".$this->access_token()."&media_id=".$media_id;
+            $voice=$client->get(new Uri($url));
+            //获取文件类型
+            $headers=$voice->getHeaders();
+            $voice_name=$headers['Content-disposition'][0];
+            $fileInfo=substr($voice_name,'-15');
+            $voice_name=substr(md5(time().mt_rand(1111,9999)),5,8).$fileInfo;
+            $voice_name=rtrim($voice_name,'"');
+            //保存文件
+            $res=Storage::put('weixin/voice/'.$voice_name, $voice->getBody());
+            if($res=='1'){
+                //文件路径入库
+                $data=[
+                    'type'=>'voice',
+                    'openid'=>$openid,
+                    'create_time'=>$time,
+                    'font'=>$voice_name
+                ];
+                $id=WxText::insertGetId($data);
+                if(!$data){
+                    Storage::delete('weixin/voice/'.$voice_name);
+                    echo "添加失败";
+                }else{
+                    echo "添加成功";
+                }
+            }else{
+                echo "添加失败";
+            }
         }else{
             $event=$obj->Event;
             if($event=='subscribe'){
