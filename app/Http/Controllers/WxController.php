@@ -52,7 +52,8 @@ class WxController extends Controller
             $img_name=rtrim($img_name,'"');
             // 保存文件
             $res=Storage::put('weixin/img/'.$img_name, $img->getBody());
-            if($res=='1'){
+            var_dump($res);die;
+            if($res){
                 //文件路径入库
                 $data=[
                     'type'=>'img',
@@ -83,7 +84,7 @@ class WxController extends Controller
             $voice_name=rtrim($voice_name,'"');
             //保存文件
             $res=Storage::put('weixin/voice/'.$voice_name, $voice->getBody());
-            if($res=='1'){
+            if($res){
                 //文件路径入库
                 $data=[
                     'type'=>'voice',
