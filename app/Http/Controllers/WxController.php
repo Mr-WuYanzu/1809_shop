@@ -161,16 +161,16 @@ class WxController extends Controller
 
     //获取access_token
     public function access_token(){
-        // $key="access_token";
-        // $token=Redis::get($key);
-        // if(!$token){
+        $key="access_token";
+        $token=Redis::get($key);
+        if(!$token){
             $url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".env('APPID')."&secret=".env('SECRET');
             $access_token=file_get_contents($url);
             $arr=json_decode($access_token);
             $token=$arr->access_token;
-        //     Redis::set($key,$token);
-        //     Redis::expire($key,3600);
-        // }
+            Redis::set($key,$token);
+            Redis::expire($key,3600);
+        }
         return $token;
     }
     //查询用户资料
@@ -230,7 +230,7 @@ class WxController extends Controller
     public function send(){
         $data=WxUser::all()->toArray();
         $openid=array_column($data,'openid');
-        $content="测试w";
+        $content="测试wss";
         $res=$this->msg_send($openid,$content);
         echo $res;
     }
