@@ -87,7 +87,6 @@ class WxController extends Controller
             $img_name=rtrim($img_name,'"');
             // 保存文件
             $res=Storage::put('weixin/img/'.$img_name, $img->getBody());
-            var_dump($res);die;
             if($res){
                 //文件路径入库
                 $data=[
@@ -145,7 +144,6 @@ class WxController extends Controller
                     echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎回来 '. $res['nickname'] .']]></Content></xml>';
                 }else{
                     $u=$this->WxUserTail($obj->FromUserName);
-                    dd($u);
                     $info=[
                         'openid'=>$u['openid'],
                         'nickname'=>$u['nickname'],
