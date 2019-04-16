@@ -37,8 +37,43 @@ class WxController extends Controller
                     'create_time'=>$time,
                     'font'=>$font
                 ];
-
             $id=WxText::insertGetId($info);
+
+
+            //获取天气信息
+            if(strpos($obj->Content,'+天气')){
+                $city=explode('+',$obj->Content)[0];
+                $url="https://free-api.heweather.net/s6/weather/now?parameters&location=".$city."&key=HE1904161030301545";
+                $arr=json_decode(file_get_contents($url),true);
+                if($arr['HeWeather6'][0]['status']!=='ok'){
+                    echo "<xml>
+                              <ToUserName><![CDATA[".$openid."]]></ToUserName>
+                              <FromUserName><![CDATA[".$wx_id."]]></FromUserName>
+                              <CreateTime>".time()."</CreateTime>
+                              <MsgType><![CDATA[text]]></MsgType>
+                              <Content><![CDATA[城市信息有误]]></Content>
+                          </xml>";
+                }else{
+                   $city=$arr['HeWeather6'][0]['basic']['parent_city'];
+                    $cond_txt=$arr['HeWeather6'][0]['now']['cond_txt'];
+                    $fl=$arr['HeWeather6'][0]['now']['fl'];
+                    $tmp=$arr['HeWeather6'][0]['now']['tmp'];
+                    $wind_dir=$arr['HeWeather6'][0]['now']['wind_dir'];
+                    $wind_sc=$arr['HeWeather6'][0]['now']['wind_sc'];
+                    $wind_spd=$arr['HeWeather6'][0]['now']['wind_spd'];
+
+                    $str="城市:".$city."\n"."天气状况:".$cond_txt."\n"."体感温度:".$fl."\n"."温度:".$tmp."\n"."风向:".$wind_dir."\n"."风力:".$wind_sc."\n"."风速:".$wind_spd."公里/小时"."\n";
+                    // echo $str;die;
+                    echo "<xml>
+                              <ToUserName><![CDATA[".$openid."]]></ToUserName>
+                              <FromUserName><![CDATA[".$wx_id."]]></FromUserName>
+                              <CreateTime>".time()."</CreateTime>
+                              <MsgType><![CDATA[text]]></MsgType>
+                              <Content><![CDATA[".$str."]]></Content>
+                          </xml>";
+                }
+
+            }
         }elseif($type=='image'){        //图片消息入库
             $time=$obj->CreateTime;
             $media_id=$obj->MediaId;
@@ -62,7 +97,7 @@ class WxController extends Controller
                     'font'=>$img_name
                 ];
                 $id=WxText::insertGetId($data);
-                if(!$data){
+                if(!$id){
                     Storage::delete('weixin/img/'.$img_name);
                     echo "添加失败";
                 }else{
@@ -93,7 +128,7 @@ class WxController extends Controller
                     'font'=>$voice_name
                 ];
                 $id=WxText::insertGetId($data);
-                if(!$data){
+                if(!$id){
                     Storage::delete('weixin/voice/'.$voice_name);
                     echo "添加失败";
                 }else{
@@ -102,7 +137,7 @@ class WxController extends Controller
             }else{
                 echo "添加失败";
             }
-        }else{
+        }elseif($type=='event'){
             $event=$obj->Event;
             if($event=='subscribe'){
                 $res=WxUser::where(['openid'=>$openid])->first();
@@ -110,6 +145,7 @@ class WxController extends Controller
                     echo '<xml><ToUserName><![CDATA['.$openid.']]></ToUserName><FromUserName><![CDATA['.$wx_id.']]></FromUserName><CreateTime>'.time().'</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA['. '欢迎回来 '. $res['nickname'] .']]></Content></xml>';
                 }else{
                     $u=$this->WxUserTail($obj->FromUserName);
+                    dd($u);
                     $info=[
                         'openid'=>$u['openid'],
                         'nickname'=>$u['nickname'],
