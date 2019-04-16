@@ -230,7 +230,7 @@ class WxController extends Controller
     public function send(){
         $data=WxUser::all()->toArray();
         $openid=array_column($data,'openid');
-        $content="测试,Ojbk!";
+        $content="野猪佩奇，请赐教!";
         $res=$this->msg_send($openid,$content);
         echo $res;
     }
