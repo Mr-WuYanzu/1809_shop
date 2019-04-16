@@ -38,8 +38,6 @@ class WxController extends Controller
                     'font'=>$font
                 ];
             $id=WxText::insertGetId($info);
-
-
             //获取天气信息
             if(strpos($obj->Content,'+天气')){
                 $city=explode('+',$obj->Content)[0];
@@ -63,7 +61,6 @@ class WxController extends Controller
                     $wind_spd=$arr['HeWeather6'][0]['now']['wind_spd'];
 
                     $str="城市:".$city."\n"."天气状况:".$cond_txt."\n"."体感温度:".$fl."\n"."温度:".$tmp."\n"."风向:".$wind_dir."\n"."风力:".$wind_sc."\n"."风速:".$wind_spd."公里/小时"."\n";
-                    // echo $str;die;
                     echo "<xml>
                               <ToUserName><![CDATA[".$openid."]]></ToUserName>
                               <FromUserName><![CDATA[".$wx_id."]]></FromUserName>
@@ -160,15 +157,11 @@ class WxController extends Controller
                 }
             }
         }
-        
-//        return $this->zi();
     }
 
     //获取access_token
     public function access_token(){
-
         $key="access_token";
-//        Redis::flush();
         $token=Redis::get($key);
         if(!$token){
             $url="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".env('APPID')."&secret=".env('SECRET');
@@ -215,6 +208,31 @@ class WxController extends Controller
         }else{
             echo "创建菜单成功";
         }
+    }
+    //群发消息
+    public function msg_send($openid_msg,$content){
+        $msg=[
+            'touser'=>$openid_msg,
+            'msgtype'=>'text',
+            'text'=>[
+                'content'=>$content
+            ]
+        ];
+        $url="https://api.weixin.qq.com/cgi-bin/message/mass/send?access_token=".$this->access_token();
+        $msg_str=json_encode($msg,JSON_UNESCAPED_UNICODE);
+        $client=new Client();
+        $response=$client->request('POST',$url,[
+            'body'=>$msg_str
+        ]);
+        return $response->getBody();
+    }
+    //群发消息,发送
+    public function send(){
+        $data=WxUser::all()->toArray();
+        $openid=array_column($data,'openid');
+        $content="发完我就走，谁看谁是狗!";
+        $res=$this->msg_send($openid,$content);
+        echo $res;
     }
 
 }

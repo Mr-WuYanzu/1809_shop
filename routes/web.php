@@ -14,6 +14,9 @@
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/city', function () {
+    return view('city');
+});
 Route::get('/phpinfo', function () {
     phpinfo();
 });
@@ -23,6 +26,8 @@ Route::post('/weixin/valid','WxController@wxEvent');
 //获取access_token
 Route::get('/access/token','WxController@access_token');
 //查询数据库数据
-Route::any('/shop',"WxController@shop");
+Route::get('/shop',"WxController@shop");
 //创建微信菜单
-Route::any('/create_menu','WxController@create_menu');
+Route::get('/create_menu','WxController@create_menu');
+//群发消息
+Route::get('/weixin/send','WxController@send');
