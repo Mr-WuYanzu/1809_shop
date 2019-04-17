@@ -39,7 +39,7 @@ class WxController extends Controller
                 ];
             $id=WxText::insertGetId($info);
             //获取天气信息
-            if(strpos($obj->Content,'+天气')||strpos($obj->Content,'+天气')){
+            if(strpos($obj->Content,'+天气')||strpos($obj->Content,'＋天气')){
                 $city=explode('+',$obj->Content)[0];
                 $url="https://free-api.heweather.net/s6/weather/now?parameters&location=".$city."&key=HE1904161030301545";
                 $arr=json_decode(file_get_contents($url),true);
