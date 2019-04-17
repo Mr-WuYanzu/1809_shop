@@ -31,3 +31,7 @@ Route::get('/shop',"WxController@shop");
 Route::get('/create_menu','WxController@create_menu');
 //群发消息
 Route::get('/weixin/send','WxController@send');
+//微信下单
+Route::get('/weixin/pay/test','weixin\WxPayController@test');
+//微信支付回调地址
+Route::post('/weixin/pay/notify','weixin\WxPayController@notify');
